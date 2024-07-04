@@ -1,5 +1,6 @@
 ﻿using Cyberbit.TaskManager.Server.Interfaces;
 using Cyberbit.TaskManager.Server.Models.Dto;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -158,37 +159,37 @@ namespace Cyberbit.TaskManager.Server.Controllers
             return deletedTaskDto;
         }
 
-        [HttpPut("doneAll/{employeeId}")]
         [Authorize]
+        [HttpPut("doneAll/{employeeId}")]
         public async Task<ActionResult<IList<TaskDto>>> MarkAllTasksAsDone([FromRoute] int employeeId)
         {
             if (employeeId <= 0)
             {
-                var errMsg = $"Invalid employee id '{employeeId}'";
+                var errMsg = $"Failed to Complete all Task with invalid id '{employeeId}'";
                 _logger.LogError(errMsg);
                 return BadRequest(errMsg);
             }
 
+            IList<Models.Task> task = null;
             try
             {
-                var tasks = await _TasksBl.CompleteAllTasks(employeeId);
-                if (tasks == null || !tasks.Any())
-                {
-                    var errMsg = $"Failed to mark tasks as done for employee '{employeeId}'. No tasks found.";
-                    _logger.LogError(errMsg);
-                    return NotFound(errMsg);
-                }
-
-                var taskDtos = _autoMapper.Mapper.Map<IList<TaskDto>>(tasks);
-                return Ok(taskDtos);
+                task = await _TasksBl.CompleteAllTasks(employeeId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Exception occurred while trying to mark all tasks as done for employee '{employeeId}'");
-                return StatusCode(500, "Internal server error");
+                _logger.LogError(ex, $"Exception occurred while trying to complete all tasks for employee '{employeeId}'");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
             }
+
+            if (task == null || !task.Any())
+            {
+                var errMsg = $"Failed to mark tasks as done for employee '{employeeId}'. No tasks found.";
+                _logger.LogError(errMsg);
+                return NotFound(errMsg);
+            }
+
+            var taskDtos = _autoMapper.Mapper.Map<IList<TaskDto>>(task);
+            return Ok(taskDtos);
         }
-
-
     }
 }

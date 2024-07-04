@@ -77,16 +77,16 @@ namespace Cyberbit.TaskManager.Server.Dal
                 .Where(t => t.UserId == employeeId && t.Status == TasksStatus.Open)
                 .ToListAsync();
 
-            _logger.LogInformation($"Tasks found: {tasks.Count}");
+            _logger.LogInformation($"Tasks to complete found: {tasks.Count}");
 
             if (tasks.Count == 0)
             {
-                _logger.LogWarning($"No tasks for employeeId: {employeeId} that are'Open'");
+                _logger.LogWarning($"No tasks were found for employeeId: {employeeId} that are Open");
             }
 
             foreach (var task in tasks)
             {
-                _logger.LogInformation($"Task Id: {task.Id} is Done");
+                _logger.LogInformation($"Task Id: {task.Id} is Completed");
                 task.Status = TasksStatus.Done;
             }
 
