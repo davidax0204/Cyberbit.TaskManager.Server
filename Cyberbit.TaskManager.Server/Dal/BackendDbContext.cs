@@ -38,6 +38,19 @@ namespace Cyberbit.TaskManager.Server.Dal
             modelBuilder.Entity<Task>()
                 .Property(t => t.Status)
                 .HasConversion(new EnumToStringConverter<TasksStatus>());
+
+            modelBuilder.Entity<TaskCategory>()
+                .HasKey(tc => new { tc.TaskId, tc.CategoryId });
+
+            modelBuilder.Entity<TaskCategory>()
+                .HasOne(tc => tc.Task)
+                .WithMany(t => t.TaskCategories)
+                .HasForeignKey(tc => tc.TaskId);
+
+            modelBuilder.Entity<TaskCategory>()
+                .HasOne(tc => tc.Category)
+                .WithMany(c => c.TaskCategories)
+                .HasForeignKey(tc => tc.CategoryId);
         }
         #endregion
 

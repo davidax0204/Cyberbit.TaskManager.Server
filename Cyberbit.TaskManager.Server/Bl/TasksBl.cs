@@ -1,8 +1,10 @@
 ﻿using Cyberbit.TaskManager.Server.Interfaces;
+using Cyberbit.TaskManager.Server.Models;
 using Cyberbit.TaskManager.Server.Models.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Cyberbit.TaskManager.Server.Bl
@@ -34,14 +36,30 @@ namespace Cyberbit.TaskManager.Server.Bl
             return retValue;
         }
 
-        public async Task<Models.Task> AddTask(Models.Task task, int createdByUserId)
+        public async Task<Models.Task> AddTask(Models.Task task, int createdByUserId, List<int> categoryIds)
         {
-            _logger.LogInformation($"AddTask - Enter");
+            _logger.LogInformation("AddTask - Enter");
+
             task.CreatedByUserId = createdByUserId;
             task.CreationTime = DateTime.Now;
             task.Status = TasksStatus.Open;
+
+            if (categoryIds != null && categoryIds.Count > 3)
+            {
+                throw new ArgumentException("A task cannot have more than 3 categories.");
+            }
+
+            if (categoryIds != null || categoryIds.Count > 0)
+            {
+                task.TaskCategories = categoryIds.Select(categoryId => new TaskCategory
+                {
+                    CategoryId = categoryId,
+                    Task = task
+                }).ToList();
+            }
+
             var retValue = await _tasksDal.AddTask(task);
-            _logger.LogInformation($"AddTask - Exit");
+            _logger.LogInformation("AddTask - Exit");
             return retValue;
         }
 

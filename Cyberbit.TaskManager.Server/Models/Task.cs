@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Cyberbit.TaskManager.Server.Models
@@ -22,6 +23,6 @@ namespace Cyberbit.TaskManager.Server.Models
         public User User { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public TasksStatus Status { get; set; }
-
+        public ICollection<TaskCategory> TaskCategories { get; set; }
     }
 }

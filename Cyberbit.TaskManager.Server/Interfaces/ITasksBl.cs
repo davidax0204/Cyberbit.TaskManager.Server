@@ -9,7 +9,7 @@ namespace Cyberbit.TaskManager.Server.Interfaces
 
         Task<Models.Task> GetTaskById(int id);
 
-        Task<Models.Task> AddTask(Models.Task task, int createdByUserId);
+        Task<Models.Task> AddTask(Models.Task task, int createdByUserId, List<int> categoryIds);
 
         Task<Models.Task> UpdateTask(Models.Task task);
 

@@ -134,6 +134,5 @@ namespace Cyberbit.TaskManager.Server.Controllers
             var deletedCategoryDto = _autoMapper.Mapper.Map<CategoryDto>(Category);
             return deletedCategoryDto;
         }
-
     }
 }

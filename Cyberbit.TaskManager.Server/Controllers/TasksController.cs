@@ -1,4 +1,5 @@
 ﻿using Cyberbit.TaskManager.Server.Interfaces;
+using Cyberbit.TaskManager.Server.Models;
 using Cyberbit.TaskManager.Server.Models.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -74,8 +75,15 @@ namespace Cyberbit.TaskManager.Server.Controllers
                 return BadRequest(errMsg);
             }
 
+            if (taskDto.CategoryIds != null && taskDto.CategoryIds.Count > 3)
+            {
+                var errMsg = "A task cannot have more than 3 categories.";
+                _logger.LogError(errMsg);
+                return BadRequest(errMsg);
+            }
+
             var task = _autoMapper.Mapper.Map<Models.Task>(taskDto);
-            var addedTask = await _TasksBl.AddTask(task, currentUser);
+            var addedTask = await _TasksBl.AddTask(task, currentUser, taskDto.CategoryIds);
             if (addedTask == null)
             {
                 var errMsg = $"Failed to add Task. Check logs";
@@ -178,7 +186,7 @@ namespace Cyberbit.TaskManager.Server.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Exception occurred while trying to complete all tasks for employee '{employeeId}'");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
             if (task == null || !task.Any())
@@ -190,6 +198,53 @@ namespace Cyberbit.TaskManager.Server.Controllers
 
             var taskDtos = _autoMapper.Mapper.Map<IList<TaskDto>>(task);
             return Ok(taskDtos);
+        }
+
+        [Authorize]
+        [HttpPut("{id}/categories")]
+        public async Task<ActionResult<TaskDto>> UpdateTaskCategories([FromRoute] int id, [FromBody] List<int> categoryIds)
+        {
+            if (id <= 0)
+            {
+                var errMsg = $"Failed to update categories for Task with invalid id '{id}'";
+                _logger.LogError(errMsg);
+                return BadRequest(errMsg);
+            }
+
+            if (categoryIds == null || categoryIds.Count > 3)
+            {
+                var errMsg = "A task cannot have more than 3 categories.";
+                _logger.LogError(errMsg);
+                return BadRequest(errMsg);
+            }
+
+            Models.Task task;
+            try
+            {
+                task = await _TasksBl.GetTaskById(id);
+                if (task == null)
+                {
+                    var errMsg = $"Task with id '{id}' not found.";
+                    _logger.LogError(errMsg);
+                    return NotFound(errMsg);
+                }
+
+                task.TaskCategories = categoryIds.Select(categoryId => new TaskCategory
+                {
+                    TaskId = id,
+                    CategoryId = categoryId
+                }).ToList();
+
+                await _TasksBl.UpdateTask(task);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Exception occurred while trying to update categories for Task '{id}'");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            var taskDto = _autoMapper.Mapper.Map<TaskDto>(task);
+            return Ok(taskDto);
         }
     }
 }

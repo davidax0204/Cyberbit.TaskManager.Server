@@ -24,7 +24,10 @@ namespace Cyberbit.TaskManager.Server.Dal
             _logger.LogInformation($"GetAllTask - Enter");
             var retValue = await _dbContext.Tasks.AsNoTracking()
                 .Include(t => t.CreatedByUser)
-                .Include(t => t.User).ToListAsync();
+                .Include(t => t.User)
+                .Include(t => t.TaskCategories)
+                .ThenInclude(tc => tc.Category)
+                .ToListAsync();
             _logger.LogInformation($"GetAllTask - Exit");
             return retValue;
         }
@@ -35,6 +38,8 @@ namespace Cyberbit.TaskManager.Server.Dal
             var retValue = await _dbContext.Tasks.AsNoTracking()
                 .Include(t => t.CreatedByUser)
                 .Include(t => t.User)
+                .Include(t => t.TaskCategories)
+                .ThenInclude(tc => tc.Category)
                 .FirstOrDefaultAsync(task => task.Id == id);
             _logger.LogInformation($"GetTaskById - Exit");
             return retValue;

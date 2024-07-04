@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Cyberbit.TaskManager.Server.Models
@@ -11,5 +12,6 @@ namespace Cyberbit.TaskManager.Server.Models
         public string Name { get; set; }
 
         public bool IsDeleted { get; set; }
+        public ICollection<TaskCategory> TaskCategories { get; set; }
     }
 }
